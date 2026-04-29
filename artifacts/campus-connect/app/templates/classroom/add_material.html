@@ -1,11 +1,14 @@
 {% extends "base.html" %}
 {% block title %}Add Material{% endblock %}
+{% block page_title %}Add Material{% endblock %}
+{% block pt %}Add Course Material{% endblock %}
+{% block header_actions %}<a href="/classroom/{{ classroom.id }}" class="btn btn-secondary btn-sm">← {{ classroom.name }}</a>{% endblock %}
+
 {% block content %}
 <div class="max-w-xl mx-auto">
-    <a href="/classroom/{{ classroom.id }}" class="text-primary-600 hover:underline text-sm mb-4 block">← Back to {{ classroom.name }}</a>
     <div class="card">
-        <h1 class="text-2xl font-bold text-gray-800 mb-6">Add Course Material</h1>
-        <form method="POST" action="/classroom/{{ classroom.id }}/material/add" class="space-y-5">
+        <h2 class="font-bold text-slate-800 text-lg mb-5">Add Course Material</h2>
+        <form method="POST" action="/classroom/{{ classroom.id }}/material/add" class="space-y-4">
             <div>
                 <label class="form-label">Title *</label>
                 <input type="text" name="title" required placeholder="e.g. Lecture 1 - Introduction to Flask" class="input-field">
@@ -14,6 +17,7 @@
                 <label class="form-label">Type</label>
                 <select name="material_type" class="input-field">
                     <option value="note">Lecture Note</option>
+                    <option value="lecture">Lecture Slide</option>
                     <option value="assignment">Assignment</option>
                     <option value="quiz">Quiz</option>
                     <option value="resource">Resource</option>
@@ -22,11 +26,11 @@
             </div>
             <div>
                 <label class="form-label">Content</label>
-                <textarea name="content" rows="8" placeholder="Write your content here... (supports plain text)" class="input-field font-mono text-sm"></textarea>
+                <textarea name="content" rows="8" placeholder="Write your content here..." class="input-field font-mono text-sm"></textarea>
             </div>
             <div class="flex gap-3">
-                <button type="submit" class="btn-primary">Upload Material</button>
-                <a href="/classroom/{{ classroom.id }}" class="btn-secondary">Cancel</a>
+                <button type="submit" class="btn btn-primary">Upload Material</button>
+                <a href="/classroom/{{ classroom.id }}" class="btn btn-secondary">Cancel</a>
             </div>
         </form>
     </div>

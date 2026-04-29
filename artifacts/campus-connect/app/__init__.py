@@ -30,10 +30,14 @@ def create_app(config_class=Config):
     from app.campus import campus_bp
     from app.classroom import classroom_bp
     from app.chat import chat_bp
+    from app.calendar import calendar_bp
+    from app.notices import notices_bp
 
     app.register_blueprint(auth_bp, url_prefix='/auth')
     app.register_blueprint(campus_bp, url_prefix='')
     app.register_blueprint(classroom_bp, url_prefix='/classroom')
     app.register_blueprint(chat_bp, url_prefix='/chat')
+    app.register_blueprint(calendar_bp, url_prefix='/calendar')
+    app.register_blueprint(notices_bp, url_prefix='/notices')
 
     return app

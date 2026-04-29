@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+{% block title %}Notices{% endblock %}
+{% block page_title %}Notices{% endblock %}
+{% block pt %}Campus Notices{% endblock %}
+{% block header_actions %}
+<a href="/notices/create" class="btn btn-primary btn-sm">+ Post Notice</a>
+{% endblock %}
+
+{% block content %}
+<div class="grid grid-cols-1 xl:grid-cols-3 gap-5">
+    <div class="xl:col-span-2 space-y-4">
+        <!-- Search & Filter -->
+        <div class="card">
+            <form method="GET" action="/notices/" class="flex gap-3 flex-wrap">
+                <input type="text" name="search" value="{{ search }}" placeholder="Search notices..." class="input-field flex-1 min-w-[160px]">
+                <select name="priority" class="input-field w-auto">
+                    <option value="">All Priorities</option>
+                    <option value="urgent" {% if priority == 'urgent' %}selected{% endif %}>Urgent</option>
+                    <option value="important" {% if priority == 'important' %}selected{% endif %}>Important</option>
+                    <option value="normal" {% if priority == 'normal' %}selected{% endif %}>Normal</option>
+                </select>
+                <button type="submit" class="btn btn-primary">Search</button>
+                {% if search or priority %}
+                <a href="/notices/" class="btn btn-secondary">Clear</a>
+                {% endif %}
+            </form>
+        </div>
+
+        <!-- Notices List -->
+        {% if notices %}
+        <div class="space-y-3">
+            {% for notice in notices %}
+            <div class="card hover:shadow-md transition-shadow">
+                <div class="flex items-start gap-3">
+                    <div class="w-10 h-10 flex-shrink-0 flex items-center justify-center rounded-xl
+                        {% if notice.priority == 'urgent' %}bg-red-100{% elif notice.priority == 'important' %}bg-amber-100{% else %}bg-blue-100{% endif %}">
+                        <svg class="w-5 h-5 {% if notice.priority == 'urgent' %}text-red-600{% elif notice.priority == 'important' %}text-amber-600{% else %}text-blue-600{% endif %}"
+                             fill="currentColor" viewBox="0 0 24 24"><path d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <div class="flex items-center gap-2 flex-wrap mb-1">
+                            <h3 class="font-bold text-slate-800">{{ notice.title }}</h3>
+                            {% if notice.priority == 'urgent' %}
+                            <span class="badge badge-rejected">URGENT</span>
+                            {% elif notice.priority == 'important' %}
+                            <span class="badge" style="background:#fef3c7;color:#b45309;">IMPORTANT</span>
+                            {% endif %}
+                        </div>
+                        <p class="text-slate-600 text-sm">{{ notice.content }}</p>
+                        <div class="flex items-center gap-3 mt-2 text-xs text-slate-400">
+                            <span>👤 {{ notice.author.username }}</span>
+                            <span>📅 {{ notice.created_at.strftime('%B %d, %Y') }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="card text-center py-12">
+            <svg class="w-12 h-12 text-slate-300 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+            <p class="text-slate-400 font-medium">No notices found</p>
+            <a href="/notices/create" class="btn btn-primary btn-sm mt-3">Post a Notice</a>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Sidebar: Urgent -->
+    <div class="space-y-4">
+        {% if urgent %}
+        <div class="card border-red-200 bg-red-50">
+            <h3 class="font-bold text-red-800 mb-3 flex items-center gap-2">
+                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
+                Urgent Notices
+            </h3>
+            <div class="space-y-2">
+                {% for n in urgent %}
+                <div class="bg-white rounded-lg p-3 border border-red-200">
+                    <h4 class="font-semibold text-red-900 text-sm">{{ n.title }}</h4>
+                    <p class="text-red-700 text-xs mt-0.5 line-clamp-2">{{ n.content }}</p>
+                    <p class="text-red-400 text-xs mt-1">{{ n.created_at.strftime('%b %d') }}</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="card">
+            <h3 class="font-bold text-slate-800 text-sm mb-3">Post a Notice</h3>
+            <p class="text-slate-500 text-xs mb-3">Share important information with the campus community.</p>
+            <a href="/notices/create" class="btn btn-primary w-full text-center">Write a Notice</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

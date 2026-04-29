@@ -1,11 +1,14 @@
 {% extends "base.html" %}
 {% block title %}Create Classroom{% endblock %}
+{% block page_title %}Create Classroom{% endblock %}
+{% block pt %}Create Classroom{% endblock %}
+{% block header_actions %}<a href="/classroom/" class="btn btn-secondary btn-sm">← Classrooms</a>{% endblock %}
+
 {% block content %}
 <div class="max-w-xl mx-auto">
-    <a href="/classroom/" class="text-primary-600 hover:underline text-sm mb-4 block">← Back to Classrooms</a>
     <div class="card">
-        <h1 class="text-2xl font-bold text-gray-800 mb-6">Create Classroom</h1>
-        <form method="POST" action="/classroom/create" class="space-y-5">
+        <h2 class="font-bold text-slate-800 text-lg mb-5">Create Classroom</h2>
+        <form method="POST" action="/classroom/create" class="space-y-4">
             <div>
                 <label class="form-label">Class Name *</label>
                 <input type="text" name="name" required placeholder="e.g. CSE400 - Software Development" class="input-field">
@@ -29,12 +32,12 @@
                     <input type="text" name="section" placeholder="e.g. A, B, C" class="input-field">
                 </div>
             </div>
-            <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 text-blue-700 text-sm">
+            <div class="bg-blue-50 border border-blue-200 rounded-xl p-3 text-blue-700 text-sm">
                 A unique class code will be generated automatically for students to join.
             </div>
             <div class="flex gap-3">
-                <button type="submit" class="btn-primary">Create Classroom</button>
-                <a href="/classroom/" class="btn-secondary">Cancel</a>
+                <button type="submit" class="btn btn-primary">Create Classroom</button>
+                <a href="/classroom/" class="btn btn-secondary">Cancel</a>
             </div>
         </form>
     </div>

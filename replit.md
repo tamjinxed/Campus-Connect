@@ -21,13 +21,18 @@ pnpm workspace monorepo using TypeScript. Each package manages its own dependenc
 - **Location**: `artifacts/mockup-sandbox/`
 - **Stack**: React + Vite
 
-## CampusConnect Features
-- **Authentication**: Flask-Login + bcrypt (Role-Based: Student / Teacher)
-- **Campus Feed**: Events + Announcements with smart department filtering
-- **Event Management**: Create, register, moderate events (teacher approval workflow)
-- **Classroom Module**: Teachers create rooms with unique codes; students join; upload materials
-- **Real-Time Chat**: SocketIO-powered chat — global campus room + per-classroom rooms
-- **Content Moderation**: Teachers approve/reject student-submitted events & announcements
+## CampusConnect Features (Phase 2 — Complete)
+- **Authentication**: Flask-Login + bcrypt (RBAC: Student / Teacher)
+- **UI**: Dark sidebar navigation (desktop) + bottom navigation bar (mobile), Tailwind CSS
+- **Campus Feed**: Events + Announcements with smart department filtering & quick actions
+- **Event Management**: Create, register, unregister, moderate events (teacher approval)
+- **Calendar**: Monthly calendar grid showing events; day-view; personal registered events
+- **Notices/Announcements**: Post notices with priority levels (normal/important/urgent); teacher moderation
+- **Classroom Module**: Teachers create rooms with unique codes; students join; upload course materials
+- **Real-Time Chat**: SocketIO — global campus room + per-classroom rooms
+- **AI Assistant**: Rule-based AI chat at /chat/ai — answers questions about events, notices, classrooms, campus life using live DB data
+- **Content Moderation**: Teachers approve/reject student events & notices from /moderation dashboard
+- **Profile**: User profile with bio, department, intake; stats on events & registrations
 
 ## Demo Accounts (password: password123)
 - Teacher: `masud@bubt.edu.bd`

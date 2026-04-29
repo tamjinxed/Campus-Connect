@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+{% block title %}My Calendar{% endblock %}
+{% block page_title %}My Calendar{% endblock %}
+{% block pt %}My Calendar{% endblock %}
+{% block header_actions %}
+<a href="/events" class="btn btn-secondary btn-sm">Browse Events</a>
+{% endblock %}
+
+{% block content %}
+<div class="grid grid-cols-1 xl:grid-cols-3 gap-5">
+    <!-- Calendar Grid -->
+    <div class="xl:col-span-2">
+        <div class="card">
+            <!-- Month navigation -->
+            <div class="flex items-center justify-between mb-5">
+                <a href="/calendar/?year={{ prev_year }}&month={{ prev_month }}" class="w-9 h-9 flex items-center justify-center rounded-xl bg-slate-100 hover:bg-slate-200 transition-colors">
+                    <svg class="w-4 h-4 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+                </a>
+                <h2 class="font-bold text-slate-800 text-lg">{{ month_name }} {{ year }}</h2>
+                <a href="/calendar/?year={{ next_year }}&month={{ next_month }}" class="w-9 h-9 flex items-center justify-center rounded-xl bg-slate-100 hover:bg-slate-200 transition-colors">
+                    <svg class="w-4 h-4 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                </a>
+            </div>
+
+            <!-- Day headers -->
+            <div class="grid grid-cols-7 mb-2">
+                {% for day in ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'] %}
+                <div class="text-center text-xs font-bold text-slate-400 py-1.5">{{ day }}</div>
+                {% endfor %}
+            </div>
+
+            <!-- Calendar days -->
+            <div class="grid grid-cols-7 gap-1">
+                {% for week in cal %}
+                {% for day in week %}
+                {% if day == 0 %}
+                <div class="aspect-square"></div>
+                {% else %}
+                <div class="relative">
+                    <a href="/calendar/day?year={{ year }}&month={{ month }}&day={{ day }}"
+                       class="aspect-square flex flex-col items-center justify-start pt-1.5 rounded-xl text-sm font-medium transition-all
+                              {% if today == day %}bg-primary-600 text-white hover:bg-primary-700{% elif events_by_day.get(day) %}bg-primary-50 text-primary-800 hover:bg-primary-100{% else %}text-slate-600 hover:bg-slate-100{% endif %}">
+                        <span class="leading-none">{{ day }}</span>
+                        {% if events_by_day.get(day) %}
+                        <div class="flex gap-0.5 mt-1 flex-wrap justify-center">
+                            {% for e in events_by_day[day][:3] %}
+                            <div class="w-1.5 h-1.5 rounded-full {% if today == day %}bg-white{% elif e.registered %}bg-green-500{% else %}bg-primary-400{% endif %}"></div>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </a>
+                </div>
+                {% endif %}
+                {% endfor %}
+                {% endfor %}
+            </div>
+
+            <!-- Legend -->
+            <div class="flex items-center gap-4 mt-4 pt-4 border-t border-slate-100 text-xs text-slate-500">
+                <div class="flex items-center gap-1.5"><div class="w-3 h-3 bg-primary-600 rounded-full"></div>Today</div>
+                <div class="flex items-center gap-1.5"><div class="w-2.5 h-2.5 bg-primary-400 rounded-full"></div>Has events</div>
+                <div class="flex items-center gap-1.5"><div class="w-2.5 h-2.5 bg-green-500 rounded-full"></div>Registered</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- My Upcoming Events -->
+    <div class="space-y-4">
+        <div class="card">
+            <h3 class="font-bold text-slate-800 mb-4">My Registered Events</h3>
+            {% if my_upcoming %}
+            <div class="space-y-3">
+                {% for event in my_upcoming %}
+                <a href="/events/{{ event.id }}" class="flex items-center gap-3 p-2.5 rounded-xl hover:bg-slate-50 transition-colors block">
+                    <div class="w-12 h-12 bg-primary-50 rounded-xl flex-shrink-0 flex flex-col items-center justify-center">
+                        <span class="text-[10px] font-bold text-primary-500 uppercase">{{ event.date.strftime('%b') }}</span>
+                        <span class="text-lg font-black text-primary-800 leading-none">{{ event.date.strftime('%d') }}</span>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <p class="font-semibold text-slate-800 text-sm truncate">{{ event.title }}</p>
+                        <p class="text-xs text-slate-400">{{ event.date.strftime('%a · %I:%M %p') }}</p>
+                        {% if event.location %}
+                        <p class="text-xs text-slate-400 truncate">📍 {{ event.location }}</p>
+                        {% endif %}
+                    </div>
+                    <span class="badge badge-approved text-xs flex-shrink-0">Going</span>
+                </a>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="text-center py-6">
+                <svg class="w-10 h-10 text-slate-300 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                <p class="text-slate-400 text-sm">No registered events yet</p>
+                <a href="/events" class="btn btn-primary btn-sm mt-3">Browse Events</a>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Events this month summary -->
+        {% set total_events = events_by_day.values() | sum(attribute='__len__') if events_by_day else 0 %}
+        <div class="card">
+            <h3 class="font-bold text-slate-800 mb-3 text-sm">This Month</h3>
+            <div class="grid grid-cols-2 gap-3 text-center">
+                <div class="bg-slate-50 rounded-xl p-3">
+                    <div class="text-2xl font-black text-primary-600">{{ events_by_day | length }}</div>
+                    <div class="text-xs text-slate-500 mt-0.5">Days with Events</div>
+                </div>
+                <div class="bg-slate-50 rounded-xl p-3">
+                    <div class="text-2xl font-black text-green-600">{{ my_upcoming | length }}</div>
+                    <div class="text-xs text-slate-500 mt-0.5">Registered</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

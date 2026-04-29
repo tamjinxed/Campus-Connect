@@ -1,23 +1,26 @@
 {% extends "base.html" %}
 {% block title %}Create Event{% endblock %}
+{% block page_title %}Create Event{% endblock %}
+{% block pt %}Create New Event{% endblock %}
+{% block header_actions %}<a href="/events" class="btn btn-secondary btn-sm">← Events</a>{% endblock %}
+
 {% block content %}
 <div class="max-w-2xl mx-auto">
-    <a href="/events" class="text-primary-600 hover:underline text-sm mb-4 block">← Back to Events</a>
     <div class="card">
-        <h1 class="text-2xl font-bold text-gray-800 mb-6">Create New Event</h1>
+        <h2 class="font-bold text-slate-800 text-lg mb-1">Create New Event</h2>
         {% if not current_user.is_teacher() %}
-        <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-5 text-blue-700 text-sm">
-            Events created by students require teacher approval before they appear on the feed.
-        </div>
+        <p class="text-slate-500 text-sm mb-5">Events you create will be reviewed by a teacher before going live.</p>
+        {% else %}
+        <p class="text-slate-500 text-sm mb-5">Your events will be published immediately.</p>
         {% endif %}
-        <form method="POST" action="/events/create" class="space-y-5">
+        <form method="POST" action="/events/create" class="space-y-4">
             <div>
                 <label class="form-label">Event Title *</label>
-                <input type="text" name="title" required placeholder="e.g. CSE Workshop on AI" class="input-field">
+                <input type="text" name="title" required placeholder="e.g. AI Workshop on Machine Learning" class="input-field">
             </div>
             <div>
                 <label class="form-label">Description *</label>
-                <textarea name="description" rows="4" required placeholder="Describe the event..." class="input-field"></textarea>
+                <textarea name="description" rows="4" required placeholder="What's this event about?" class="input-field"></textarea>
             </div>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
@@ -36,31 +39,31 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                     <label class="form-label">Location</label>
-                    <input type="text" name="location" placeholder="e.g. Main Auditorium, BUBT" class="input-field">
+                    <input type="text" name="location" placeholder="e.g. Lab 301, BUBT" class="input-field">
                 </div>
                 <div>
-                    <label class="form-label">Max Participants (optional)</label>
+                    <label class="form-label">Max Participants</label>
                     <input type="number" name="max_participants" placeholder="Leave blank for unlimited" min="1" class="input-field">
                 </div>
             </div>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                    <label class="form-label">Department (optional)</label>
+                    <label class="form-label">Target Department</label>
                     <select name="department" class="input-field">
                         <option value="">All Departments</option>
-                        {% for dept in ['CSE','EEE','BBA','English','Mathematics','Physics'] %}
-                        <option value="{{ dept }}">{{ dept }}</option>
+                        {% for d in ['CSE','EEE','BBA','English','Mathematics','Physics'] %}
+                        <option value="{{ d }}">{{ d }}</option>
                         {% endfor %}
                     </select>
                 </div>
                 <div>
                     <label class="form-label">Tags (comma-separated)</label>
-                    <input type="text" name="tags" placeholder="e.g. AI, Machine Learning, Workshop" class="input-field">
+                    <input type="text" name="tags" placeholder="e.g. AI, Python, Workshop" class="input-field">
                 </div>
             </div>
             <div class="flex gap-3 pt-2">
-                <button type="submit" class="btn-primary">Create Event</button>
-                <a href="/events" class="btn-secondary">Cancel</a>
+                <button type="submit" class="btn btn-primary">Create Event</button>
+                <a href="/events" class="btn btn-secondary">Cancel</a>
             </div>
         </form>
     </div>

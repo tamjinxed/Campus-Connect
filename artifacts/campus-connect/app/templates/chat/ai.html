@@ -1,0 +1,166 @@
+{% extends "base.html" %}
+{% block title %}AI Assistant{% endblock %}
+{% block page_title %}AI Assistant{% endblock %}
+{% block pt %}Campus AI Assistant{% endblock %}
+
+{% block content %}
+<div class="flex flex-col h-[calc(100vh-180px)] max-w-3xl mx-auto">
+    <!-- Header card -->
+    <div class="card mb-4 flex items-center gap-4 flex-shrink-0">
+        <div class="w-12 h-12 bg-gradient-to-br from-primary-600 to-purple-600 rounded-xl flex items-center justify-center flex-shrink-0">
+            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17H3a2 2 0 01-2-2V5a2 2 0 012-2h14a2 2 0 012 2v10a2 2 0 01-2 2h-2"/></svg>
+        </div>
+        <div>
+            <h2 class="font-bold text-slate-800">CampusConnect AI</h2>
+            <p class="text-slate-500 text-sm">Ask me about events, schedules, classrooms, and campus life</p>
+        </div>
+        <div class="ml-auto flex items-center gap-1.5">
+            <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+            <span class="text-xs text-slate-500 font-medium">Online</span>
+        </div>
+    </div>
+
+    <!-- Chat messages -->
+    <div id="ai-messages" class="flex-1 overflow-y-auto space-y-4 pb-4">
+        <!-- Welcome message -->
+        <div class="flex items-start gap-3">
+            <div class="w-8 h-8 bg-gradient-to-br from-primary-600 to-purple-600 rounded-full flex items-center justify-center flex-shrink-0">
+                <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17H3a2 2 0 01-2-2V5a2 2 0 012-2h14a2 2 0 012 2v10a2 2 0 01-2 2h-2"/></svg>
+            </div>
+            <div class="flex-1">
+                <div class="bg-white border border-slate-200 rounded-2xl rounded-tl-sm p-4 max-w-lg shadow-sm">
+                    <p class="text-slate-700 text-sm leading-relaxed">
+                        👋 Hello, <strong>{{ current_user.username }}</strong>! I'm your CampusConnect AI assistant.<br><br>
+                        I can help you with upcoming <strong>events</strong>, <strong>campus notices</strong>, <strong>classroom info</strong>, and more. What would you like to know?
+                    </p>
+                </div>
+                <!-- Quick suggestions -->
+                <div class="flex flex-wrap gap-2 mt-2">
+                    <button onclick="askQuestion('What events are coming up?')" class="text-xs bg-white border border-slate-200 hover:border-primary-400 hover:text-primary-700 text-slate-600 px-3 py-1.5 rounded-full transition-colors">📅 Upcoming events</button>
+                    <button onclick="askQuestion('Show latest notices')" class="text-xs bg-white border border-slate-200 hover:border-primary-400 hover:text-primary-700 text-slate-600 px-3 py-1.5 rounded-full transition-colors">📢 Latest notices</button>
+                    <button onclick="askQuestion('How do I join a classroom?')" class="text-xs bg-white border border-slate-200 hover:border-primary-400 hover:text-primary-700 text-slate-600 px-3 py-1.5 rounded-full transition-colors">📚 Join classroom</button>
+                    <button onclick="askQuestion('What can you help me with?')" class="text-xs bg-white border border-slate-200 hover:border-primary-400 hover:text-primary-700 text-slate-600 px-3 py-1.5 rounded-full transition-colors">🤖 Help</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Input area -->
+    <div class="card mt-2 flex-shrink-0">
+        <form id="ai-form" class="flex gap-3">
+            <input type="text" id="ai-input" placeholder="Ask anything about campus..." autocomplete="off"
+                class="flex-1 input-field">
+            <button type="submit" id="ai-send"
+                class="w-10 h-10 bg-primary-600 hover:bg-primary-700 text-white rounded-xl flex items-center justify-center transition-colors flex-shrink-0">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/></svg>
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const CURRENT_USER = "{{ current_user.username }}";
+const messagesDiv = document.getElementById('ai-messages');
+const form = document.getElementById('ai-form');
+const input = document.getElementById('ai-input');
+
+function scrollBottom() { messagesDiv.scrollTop = messagesDiv.scrollHeight; }
+
+function renderMarkdown(text) {
+    return text
+        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\*(.*?)\*/g, '<em>$1</em>')
+        .replace(/\n\n/g, '</p><p class="mt-2">')
+        .replace(/\n/g, '<br>');
+}
+
+function addMessage(who, text) {
+    const isUser = who === 'user';
+    const div = document.createElement('div');
+    div.className = `flex items-start gap-3 ${isUser ? 'flex-row-reverse' : ''}`;
+
+    const avatar = `<div class="w-8 h-8 ${isUser ? 'bg-primary-600' : 'bg-gradient-to-br from-primary-600 to-purple-600'} rounded-full flex items-center justify-center flex-shrink-0">
+        ${isUser
+            ? `<span class="text-white text-sm font-bold">${CURRENT_USER[0].toUpperCase()}</span>`
+            : `<svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17H3a2 2 0 01-2-2V5a2 2 0 012-2h14a2 2 0 012 2v10a2 2 0 01-2 2h-2"/></svg>`
+        }
+    </div>`;
+
+    const bubble = `<div class="max-w-lg">
+        <div class="${isUser ? 'bg-primary-600 text-white' : 'bg-white border border-slate-200 text-slate-700'} rounded-2xl ${isUser ? 'rounded-tr-sm' : 'rounded-tl-sm'} p-3.5 shadow-sm text-sm leading-relaxed">
+            <p>${isUser ? escapeHtml(text) : renderMarkdown(text)}</p>
+        </div>
+    </div>`;
+
+    div.innerHTML = isUser ? `${bubble}${avatar}` : `${avatar}${bubble}`;
+    messagesDiv.appendChild(div);
+    scrollBottom();
+}
+
+function addTyping() {
+    const div = document.createElement('div');
+    div.className = 'flex items-start gap-3';
+    div.id = 'typing-indicator';
+    div.innerHTML = `<div class="w-8 h-8 bg-gradient-to-br from-primary-600 to-purple-600 rounded-full flex items-center justify-center flex-shrink-0">
+        <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17H3a2 2 0 01-2-2V5a2 2 0 012-2h14a2 2 0 012 2v10a2 2 0 01-2 2h-2"/></svg>
+    </div>
+    <div class="bg-white border border-slate-200 rounded-2xl rounded-tl-sm p-3.5 shadow-sm">
+        <div class="flex gap-1 items-center h-4">
+            <div class="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style="animation-delay:0s"></div>
+            <div class="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style="animation-delay:0.15s"></div>
+            <div class="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style="animation-delay:0.3s"></div>
+        </div>
+    </div>`;
+    messagesDiv.appendChild(div);
+    scrollBottom();
+}
+
+function removeTyping() {
+    const t = document.getElementById('typing-indicator');
+    if (t) t.remove();
+}
+
+async function askQuestion(q) {
+    input.value = q;
+    await sendMessage(q);
+}
+
+async function sendMessage(question) {
+    if (!question.trim()) return;
+    addMessage('user', question);
+    input.value = '';
+    input.disabled = true;
+    addTyping();
+    try {
+        const resp = await fetch('/chat/ai/ask', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ question })
+        });
+        const data = await resp.json();
+        removeTyping();
+        addMessage('ai', data.answer);
+    } catch (e) {
+        removeTyping();
+        addMessage('ai', "Sorry, I couldn't process your request. Please try again.");
+    }
+    input.disabled = false;
+    input.focus();
+}
+
+form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    await sendMessage(input.value.trim());
+});
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.appendChild(document.createTextNode(text));
+    return div.innerHTML;
+}
+
+scrollBottom();
+</script>
+{% endblock %}

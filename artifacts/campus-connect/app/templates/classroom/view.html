@@ -1,87 +1,82 @@
 {% extends "base.html" %}
 {% block title %}{{ classroom.name }}{% endblock %}
+{% block page_title %}{{ classroom.name }}{% endblock %}
+{% block pt %}{{ classroom.name }}{% endblock %}
+{% block header_actions %}
+<a href="/classroom/" class="btn btn-secondary btn-sm">← Classrooms</a>
+<a href="/chat/classroom/{{ classroom.id }}" class="btn btn-primary btn-sm">Open Chat</a>
+{% endblock %}
+
 {% block content %}
-<div class="space-y-6">
-    <!-- Header -->
+<div class="space-y-5">
+    <!-- Classroom Info -->
     <div class="card">
         <div class="flex items-start justify-between flex-wrap gap-4">
             <div>
-                <div class="flex items-center gap-2 mb-2 flex-wrap">
-                    {% if classroom.department %}<span class="bg-purple-100 text-purple-700 text-xs px-2 py-0.5 rounded-full">{{ classroom.department }}</span>{% endif %}
-                    {% if classroom.section %}<span class="bg-gray-100 text-gray-600 text-xs px-2 py-0.5 rounded-full">Section {{ classroom.section }}</span>{% endif %}
+                <div class="flex flex-wrap gap-2 mb-2">
+                    {% if classroom.department %}<span class="badge" style="background:#ede9fe;color:#6d28d9;">{{ classroom.department }}</span>{% endif %}
+                    {% if classroom.section %}<span class="badge" style="background:#f1f5f9;color:#475569;">Section {{ classroom.section }}</span>{% endif %}
                 </div>
-                <h1 class="text-2xl font-bold text-gray-800">{{ classroom.name }}</h1>
-                <p class="text-gray-500 text-sm mt-1">Teacher: {{ classroom.teacher.username }}</p>
-                {% if classroom.description %}<p class="text-gray-600 text-sm mt-2">{{ classroom.description }}</p>{% endif %}
+                <h2 class="text-xl font-black text-slate-800">{{ classroom.name }}</h2>
+                <p class="text-slate-500 text-sm mt-1">Teacher: <strong>{{ classroom.teacher.username }}</strong></p>
+                {% if classroom.description %}<p class="text-slate-500 text-sm mt-1">{{ classroom.description }}</p>{% endif %}
             </div>
-            <div class="flex flex-col gap-2 items-end">
-                {% if is_teacher %}
-                <div class="bg-gray-100 rounded-xl px-4 py-2 text-center">
-                    <div class="text-xs text-gray-500 mb-1">Class Code</div>
-                    <div class="text-2xl font-mono font-bold text-primary-700 tracking-widest">{{ classroom.code }}</div>
-                    <div class="text-xs text-gray-400">Share with students</div>
-                </div>
-                {% endif %}
-                <div class="flex gap-2">
-                    <a href="/chat/classroom/{{ classroom.id }}" class="btn-primary text-sm">Open Chat</a>
-                    {% if not is_teacher %}
-                    <form method="POST" action="/classroom/{{ classroom.id }}/leave" onsubmit="return confirm('Leave this classroom?')">
-                        <button type="submit" class="btn-danger text-sm">Leave</button>
-                    </form>
-                    {% endif %}
-                </div>
+            {% if is_teacher %}
+            <div class="bg-slate-900 rounded-2xl px-5 py-4 text-center">
+                <div class="text-slate-400 text-xs mb-1 font-medium">SHARE CODE</div>
+                <div class="text-white text-3xl font-black font-mono tracking-[0.2em]">{{ classroom.code }}</div>
+                <div class="text-slate-500 text-xs mt-1">Share with students</div>
             </div>
+            {% endif %}
         </div>
-        <div class="grid grid-cols-3 gap-4 mt-4 pt-4 border-t border-gray-100 text-center">
-            <div>
-                <div class="text-2xl font-bold text-primary-600">{{ classroom.member_count() }}</div>
-                <div class="text-xs text-gray-400">Students</div>
+        <div class="grid grid-cols-3 gap-4 mt-4 pt-4 border-t border-slate-100">
+            <div class="text-center">
+                <div class="text-2xl font-black text-primary-600">{{ classroom.member_count() }}</div>
+                <div class="text-xs text-slate-400 font-medium">Students</div>
             </div>
-            <div>
-                <div class="text-2xl font-bold text-primary-600">{{ materials|length }}</div>
-                <div class="text-xs text-gray-400">Materials</div>
+            <div class="text-center">
+                <div class="text-2xl font-black text-primary-600">{{ materials|length }}</div>
+                <div class="text-xs text-slate-400 font-medium">Materials</div>
             </div>
-            <div>
-                <div class="text-sm font-medium text-gray-600">{{ classroom.created_at.strftime('%b %Y') }}</div>
-                <div class="text-xs text-gray-400">Created</div>
+            <div class="text-center">
+                <div class="text-sm font-semibold text-slate-600">{{ classroom.created_at.strftime('%b %Y') }}</div>
+                <div class="text-xs text-slate-400 font-medium">Created</div>
             </div>
         </div>
     </div>
 
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
         <!-- Materials -->
-        <div class="lg:col-span-2 space-y-4">
-            <div class="flex items-center justify-between">
-                <h2 class="text-lg font-semibold text-gray-700">Course Materials</h2>
+        <div class="lg:col-span-2">
+            <div class="flex items-center justify-between mb-3">
+                <h3 class="font-bold text-slate-800">Course Materials</h3>
                 {% if is_teacher %}
-                <a href="/classroom/{{ classroom.id }}/material/add" class="btn-primary text-sm">+ Add Material</a>
+                <a href="/classroom/{{ classroom.id }}/material/add" class="btn btn-primary btn-sm">+ Add</a>
                 {% endif %}
             </div>
             {% if materials %}
             <div class="space-y-3">
-                {% for material in materials %}
-                <div class="bg-white rounded-xl border border-gray-100 shadow-sm p-4">
-                    <div class="flex items-start justify-between gap-3">
-                        <div class="flex items-start gap-3 flex-1">
-                            <div class="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0
-                                {% if material.material_type == 'assignment' %}bg-orange-100{% elif material.material_type == 'quiz' %}bg-red-100{% elif material.material_type == 'lecture' %}bg-blue-100{% else %}bg-gray-100{% endif %}">
-                                <svg class="w-5 h-5 {% if material.material_type == 'assignment' %}text-orange-600{% elif material.material_type == 'quiz' %}text-red-600{% elif material.material_type == 'lecture' %}text-blue-600{% else %}text-gray-500{% endif %}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                {% for mat in materials %}
+                <div class="card">
+                    <div class="flex items-start gap-3">
+                        <div class="w-10 h-10 rounded-xl flex-shrink-0 flex items-center justify-center
+                            {% if mat.material_type == 'assignment' %}bg-orange-100{% elif mat.material_type == 'quiz' %}bg-red-100{% elif mat.material_type == 'lecture' or mat.material_type == 'note' %}bg-blue-100{% else %}bg-slate-100{% endif %}">
+                            <svg class="w-5 h-5 {% if mat.material_type == 'assignment' %}text-orange-600{% elif mat.material_type == 'quiz' %}text-red-600{% elif mat.material_type in ['lecture','note'] %}text-blue-600{% else %}text-slate-500{% endif %}"
+                                 fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-center gap-2 flex-wrap mb-1">
+                                <h4 class="font-semibold text-slate-800">{{ mat.title }}</h4>
+                                <span class="badge" style="background:#f1f5f9;color:#475569;">{{ mat.material_type }}</span>
                             </div>
-                            <div class="flex-1 min-w-0">
-                                <div class="flex items-center gap-2 flex-wrap mb-1">
-                                    <h3 class="font-semibold text-gray-800">{{ material.title }}</h3>
-                                    <span class="bg-gray-100 text-gray-500 text-xs px-2 py-0.5 rounded-full">{{ material.material_type }}</span>
-                                </div>
-                                {% if material.content %}
-                                <p class="text-gray-600 text-sm whitespace-pre-line">{{ material.content }}</p>
-                                {% endif %}
-                                <p class="text-xs text-gray-400 mt-2">{{ material.created_at.strftime('%d %b %Y') }}</p>
-                            </div>
+                            {% if mat.content %}
+                            <p class="text-slate-600 text-sm whitespace-pre-line">{{ mat.content }}</p>
+                            {% endif %}
+                            <p class="text-xs text-slate-400 mt-1.5">{{ mat.created_at.strftime('%d %b %Y') }}</p>
                         </div>
                         {% if is_teacher %}
-                        <form method="POST" action="/classroom/{{ classroom.id }}/material/{{ material.id }}/delete" 
-                              onsubmit="return confirm('Delete this material?')">
-                            <button type="submit" class="text-red-400 hover:text-red-600 transition-colors flex-shrink-0">
+                        <form method="POST" action="/classroom/{{ classroom.id }}/material/{{ mat.id }}/delete" onsubmit="return confirm('Delete this material?')">
+                            <button type="submit" class="text-slate-300 hover:text-red-500 transition-colors p-1">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
                             </button>
                         </form>
@@ -92,35 +87,40 @@
             </div>
             {% else %}
             <div class="card text-center py-10">
-                <svg class="w-10 h-10 text-gray-300 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                <p class="text-gray-400">No materials yet</p>
+                <p class="text-slate-400 text-sm mb-3">No materials uploaded yet</p>
                 {% if is_teacher %}
-                <a href="/classroom/{{ classroom.id }}/material/add" class="btn-primary mt-3 inline-block text-sm">Add First Material</a>
+                <a href="/classroom/{{ classroom.id }}/material/add" class="btn btn-primary btn-sm">Add First Material</a>
                 {% endif %}
             </div>
             {% endif %}
         </div>
 
-        <!-- Members Sidebar -->
+        <!-- Members -->
         <div>
             <div class="card">
-                <h2 class="font-semibold text-gray-700 mb-3">Students ({{ classroom.member_count() }})</h2>
-                <div class="space-y-2 max-h-80 overflow-y-auto">
-                    {% for member in members %}
-                    <div class="flex items-center gap-2">
+                <h3 class="font-semibold text-slate-800 mb-3 text-sm">Students ({{ classroom.member_count() }})</h3>
+                <div class="space-y-2 max-h-72 overflow-y-auto">
+                    {% for m in members %}
+                    <div class="flex items-center gap-2.5">
                         <div class="w-8 h-8 bg-primary-100 rounded-full flex items-center justify-center text-primary-700 text-sm font-bold flex-shrink-0">
-                            {{ member.student.username[0].upper() }}
+                            {{ m.student.username[0].upper() }}
                         </div>
                         <div class="min-w-0">
-                            <p class="text-sm font-medium text-gray-700 truncate">{{ member.student.username }}</p>
-                            {% if member.student.intake %}<p class="text-xs text-gray-400">{{ member.student.intake }}</p>{% endif %}
+                            <p class="text-sm font-medium text-slate-700 truncate">{{ m.student.username }}</p>
+                            {% if m.student.intake %}<p class="text-xs text-slate-400">{{ m.student.intake }}</p>{% endif %}
                         </div>
                     </div>
+                    {% else %}
+                    <p class="text-slate-400 text-sm text-center py-4">No students yet</p>
                     {% endfor %}
-                    {% if not members %}
-                    <p class="text-gray-400 text-sm text-center py-4">No students yet</p>
-                    {% endif %}
                 </div>
+                {% if not is_teacher %}
+                <div class="pt-3 mt-3 border-t border-slate-100">
+                    <form method="POST" action="/classroom/{{ classroom.id }}/leave" onsubmit="return confirm('Leave this classroom?')">
+                        <button class="btn btn-danger btn-sm w-full">Leave Classroom</button>
+                    </form>
+                </div>
+                {% endif %}
             </div>
         </div>
     </div>

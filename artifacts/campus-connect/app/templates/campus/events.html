@@ -1,70 +1,74 @@
 {% extends "base.html" %}
 {% block title %}Events{% endblock %}
-{% block content %}
-<div class="space-y-6">
-    <div class="flex items-center justify-between flex-wrap gap-4">
-        <div>
-            <h1 class="text-2xl font-bold text-gray-800">Events</h1>
-            <p class="text-gray-500 text-sm">Discover and register for campus events</p>
-        </div>
-        <a href="/events/create" class="btn-primary">+ Create Event</a>
-    </div>
+{% block page_title %}Events{% endblock %}
+{% block pt %}Campus Events{% endblock %}
+{% block header_actions %}
+<a href="/events/create" class="btn btn-primary btn-sm">+ Create Event</a>
+{% endblock %}
 
+{% block content %}
+<div class="space-y-5">
     <!-- Search & Filter -->
     <div class="card">
         <form method="GET" action="/events" class="flex flex-wrap gap-3">
-            <input type="text" name="search" value="{{ search }}" placeholder="Search events..." class="input-field flex-1 min-w-[200px]">
-            <select name="category" class="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500 min-w-[140px]">
+            <input type="text" name="search" value="{{ search }}" placeholder="Search events..." class="input-field flex-1 min-w-[180px]">
+            <select name="category" class="input-field w-auto">
                 <option value="">All Categories</option>
                 {% for cat in ['general','academic','sports','cultural','workshop','seminar','club'] %}
                 <option value="{{ cat }}" {% if category == cat %}selected{% endif %}>{{ cat.title() }}</option>
                 {% endfor %}
             </select>
-            <button type="submit" class="btn-primary">Search</button>
-            {% if search or category %}
-            <a href="/events" class="btn-secondary">Clear</a>
-            {% endif %}
+            <button type="submit" class="btn btn-primary">Search</button>
+            {% if search or category %}<a href="/events" class="btn btn-secondary">Clear</a>{% endif %}
         </form>
     </div>
+
+    <!-- Results count -->
+    {% if events %}
+    <p class="text-slate-500 text-sm">{{ events | length }} event{{ 's' if events|length != 1 }} found</p>
+    {% endif %}
 
     <!-- Events Grid -->
     {% if events %}
     <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
         {% for event in events %}
-        <div class="bg-white rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow overflow-hidden">
-            <div class="bg-gradient-to-r from-primary-600 to-primary-700 p-4 text-white">
-                <div class="flex items-start justify-between">
-                    <div>
-                        <span class="text-xs bg-white bg-opacity-20 px-2 py-0.5 rounded-full">{{ event.category }}</span>
-                        <h3 class="font-bold mt-2 text-lg leading-tight">{{ event.title }}</h3>
-                    </div>
+        <div class="bg-white rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-all hover:-translate-y-0.5 overflow-hidden">
+            <div class="h-2 bg-gradient-to-r
+                {% if event.category == 'workshop' %}from-amber-400 to-orange-400
+                {% elif event.category == 'academic' %}from-blue-500 to-indigo-500
+                {% elif event.category == 'sports' %}from-green-400 to-emerald-500
+                {% elif event.category == 'cultural' %}from-pink-400 to-rose-500
+                {% elif event.category == 'seminar' %}from-violet-400 to-purple-500
+                {% elif event.category == 'club' %}from-orange-400 to-red-400
+                {% else %}from-slate-400 to-slate-500{% endif %}">
+            </div>
+            <div class="p-5">
+                <div class="flex items-start justify-between mb-3">
+                    <span class="category-badge cat-{{ event.category }}">{{ event.category }}</span>
                     <div class="text-right flex-shrink-0 ml-2">
-                        <div class="text-2xl font-bold">{{ event.date.strftime('%d') }}</div>
-                        <div class="text-xs opacity-80">{{ event.date.strftime('%b %Y') }}</div>
+                        <div class="text-xl font-black text-slate-800">{{ event.date.strftime('%d') }}</div>
+                        <div class="text-xs text-slate-400 font-medium">{{ event.date.strftime('%b %Y') }}</div>
                     </div>
                 </div>
-            </div>
-            <div class="p-4">
-                <p class="text-gray-600 text-sm line-clamp-2 mb-3">{{ event.description }}</p>
-                <div class="space-y-1 text-xs text-gray-500 mb-4">
-                    <div class="flex items-center gap-1">🕐 {{ event.date.strftime('%A, %d %b · %I:%M %p') }}</div>
-                    {% if event.location %}<div class="flex items-center gap-1">📍 {{ event.location }}</div>{% endif %}
-                    <div class="flex items-center gap-1">👤 By {{ event.organizer.username }}</div>
-                    <div class="flex items-center gap-1">
-                        🧑‍🤝‍🧑 {{ event.registration_count() }} registered
-                        {% if event.max_participants %} / {{ event.max_participants }}{% endif %}
+                <h3 class="font-bold text-slate-800 text-base mb-1 line-clamp-2">{{ event.title }}</h3>
+                <p class="text-slate-500 text-sm line-clamp-2 mb-3">{{ event.description }}</p>
+                <div class="space-y-1 text-xs text-slate-400 mb-4">
+                    <div class="flex items-center gap-1.5">🕐 {{ event.date.strftime('%A, %d %b · %I:%M %p') }}</div>
+                    {% if event.location %}<div class="flex items-center gap-1.5">📍 {{ event.location }}</div>{% endif %}
+                    <div class="flex items-center gap-1.5">
+                        👥 {{ event.registration_count() }}{% if event.max_participants %}/{{ event.max_participants }}{% endif %} registered
                     </div>
                 </div>
                 <div class="flex gap-2">
-                    <a href="/events/{{ event.id }}" class="btn-secondary text-xs flex-1 text-center py-2">View Details</a>
+                    <a href="/events/{{ event.id }}" class="btn btn-secondary btn-sm flex-1 text-center">Details</a>
                     {% if event.id in user_registrations %}
-                    <span class="bg-green-100 text-green-700 text-xs px-3 py-2 rounded-lg font-medium">Registered</span>
-                    {% elif not event.is_full() %}
-                    <form method="POST" action="/events/{{ event.id }}/register" class="flex-1">
-                        <button type="submit" class="btn-primary text-xs w-full py-2">Register</button>
-                    </form>
+                    <span class="btn btn-sm flex-1 text-center" style="background:#dcfce7;color:#166534;">✓ Going</span>
+                    {% elif event.is_full() %}
+                    <span class="btn btn-sm flex-1 text-center" style="background:#fee2e2;color:#b91c1c;">Full</span>
                     {% else %}
-                    <span class="bg-red-100 text-red-700 text-xs px-3 py-2 rounded-lg font-medium">Full</span>
+                    <form method="POST" action="/events/{{ event.id }}/register" class="flex-1">
+                        <button class="btn btn-primary btn-sm w-full">Register</button>
+                    </form>
                     {% endif %}
                 </div>
             </div>
@@ -73,9 +77,9 @@
     </div>
     {% else %}
     <div class="card text-center py-16">
-        <svg class="w-16 h-16 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-        <p class="text-gray-400 text-lg mb-2">No events found</p>
-        <a href="/events/create" class="btn-primary mt-2 inline-block">Create the First Event</a>
+        <svg class="w-16 h-16 text-slate-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg>
+        <p class="text-slate-400 text-lg font-medium mb-2">No events found</p>
+        <a href="/events/create" class="btn btn-primary mt-2">Create the First Event</a>
     </div>
     {% endif %}
 </div>

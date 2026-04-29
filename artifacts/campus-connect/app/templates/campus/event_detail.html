@@ -1,82 +1,109 @@
 {% extends "base.html" %}
 {% block title %}{{ event.title }}{% endblock %}
+{% block page_title %}Event Details{% endblock %}
+{% block pt %}{{ event.title }}{% endblock %}
+{% block header_actions %}
+<a href="/events" class="btn btn-secondary btn-sm">← Events</a>
+{% endblock %}
+
 {% block content %}
-<div class="max-w-3xl mx-auto">
-    <a href="/events" class="text-primary-600 hover:underline text-sm mb-4 block">← Back to Events</a>
-    <div class="card mb-6">
-        <div class="flex items-start justify-between flex-wrap gap-4 mb-4">
-            <div>
-                <div class="flex items-center gap-2 mb-2 flex-wrap">
-                    <span class="bg-blue-100 text-blue-700 text-xs px-2 py-0.5 rounded-full font-medium">{{ event.category }}</span>
-                    <span class="badge-{{ event.status }}">{{ event.status }}</span>
-                    {% if event.department %}
-                    <span class="bg-gray-100 text-gray-600 text-xs px-2 py-0.5 rounded-full">{{ event.department }}</span>
-                    {% endif %}
+<div class="max-w-3xl mx-auto space-y-4">
+    <!-- Color bar -->
+    <div class="h-1.5 bg-gradient-to-r
+        {% if event.category == 'workshop' %}from-amber-400 to-orange-400
+        {% elif event.category == 'academic' %}from-blue-500 to-indigo-500
+        {% elif event.category == 'sports' %}from-green-400 to-emerald-500
+        {% elif event.category == 'cultural' %}from-pink-400 to-rose-500
+        {% elif event.category == 'seminar' %}from-violet-400 to-purple-500
+        {% else %}from-primary-500 to-primary-700{% endif %} rounded-full">
+    </div>
+
+    <div class="card">
+        <div class="flex items-start justify-between flex-wrap gap-4 mb-5">
+            <div class="flex-1 min-w-0">
+                <div class="flex flex-wrap gap-2 mb-2">
+                    <span class="category-badge cat-{{ event.category }}">{{ event.category }}</span>
+                    <span class="badge badge-{{ event.status }}">{{ event.status }}</span>
+                    {% if event.department %}<span class="badge" style="background:#f1f5f9;color:#475569;">{{ event.department }}</span>{% endif %}
                 </div>
-                <h1 class="text-2xl font-bold text-gray-900">{{ event.title }}</h1>
-                <p class="text-gray-500 text-sm mt-1">Organized by <strong>{{ event.organizer.username }}</strong></p>
+                <h1 class="text-2xl font-black text-slate-800 leading-tight">{{ event.title }}</h1>
+                <p class="text-slate-500 text-sm mt-1">Organized by <strong>{{ event.organizer.username }}</strong></p>
             </div>
             {% if event.status == 'approved' %}
-            <div class="text-center bg-primary-50 rounded-xl px-4 py-3 flex-shrink-0">
-                <div class="text-3xl font-bold text-primary-800">{{ event.date.strftime('%d') }}</div>
-                <div class="text-sm font-medium text-primary-600">{{ event.date.strftime('%B %Y') }}</div>
+            <div class="flex-shrink-0 text-center bg-primary-50 rounded-2xl px-5 py-3">
+                <div class="text-3xl font-black text-primary-800">{{ event.date.strftime('%d') }}</div>
+                <div class="text-sm font-semibold text-primary-600">{{ event.date.strftime('%B') }}</div>
+                <div class="text-xs text-primary-400">{{ event.date.strftime('%Y') }}</div>
             </div>
             {% endif %}
         </div>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 bg-gray-50 rounded-xl mb-6 text-sm">
-            <div class="flex items-center gap-2 text-gray-600">
-                <svg class="w-5 h-5 text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                {{ event.date.strftime('%A, %d %B %Y at %I:%M %p') }}
+        <!-- Info grid -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-slate-50 rounded-xl p-4 mb-5">
+            <div class="flex items-center gap-2.5 text-sm text-slate-600">
+                <div class="w-8 h-8 bg-primary-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <svg class="w-4 h-4 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                </div>
+                <span>{{ event.date.strftime('%A, %d %B %Y at %I:%M %p') }}</span>
             </div>
             {% if event.location %}
-            <div class="flex items-center gap-2 text-gray-600">
-                <svg class="w-5 h-5 text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-                {{ event.location }}
+            <div class="flex items-center gap-2.5 text-sm text-slate-600">
+                <div class="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                </div>
+                <span>{{ event.location }}</span>
             </div>
             {% endif %}
-            <div class="flex items-center gap-2 text-gray-600">
-                <svg class="w-5 h-5 text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-                {{ event.registration_count() }} registered{% if event.max_participants %} / {{ event.max_participants }} max{% endif %}
+            <div class="flex items-center gap-2.5 text-sm text-slate-600">
+                <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                </div>
+                <span>{{ event.registration_count() }} registered{% if event.max_participants %} / {{ event.max_participants }} max{% endif %}</span>
             </div>
         </div>
 
-        <div class="prose max-w-none mb-6">
-            <h2 class="text-lg font-semibold text-gray-800 mb-2">About this event</h2>
-            <p class="text-gray-600 whitespace-pre-line">{{ event.description }}</p>
+        <!-- Description -->
+        <div class="mb-5">
+            <h2 class="font-bold text-slate-800 mb-2">About this event</h2>
+            <p class="text-slate-600 leading-relaxed whitespace-pre-line text-sm">{{ event.description }}</p>
         </div>
 
+        <!-- Tags -->
         {% if event.tags %}
-        <div class="flex flex-wrap gap-2 mb-6">
+        <div class="flex flex-wrap gap-2 mb-5">
             {% for tag in event.tags.split(',') %}
-            <span class="bg-gray-100 text-gray-600 text-xs px-2 py-1 rounded-full">#{{ tag.strip() }}</span>
+            <span class="bg-slate-100 text-slate-600 text-xs px-2.5 py-1 rounded-full font-medium">#{{ tag.strip() }}</span>
             {% endfor %}
         </div>
         {% endif %}
 
-        <!-- Registration Actions -->
+        <!-- Registration -->
         {% if event.status == 'approved' %}
-        <div class="flex flex-wrap gap-3">
+        <div class="border-t border-slate-100 pt-5 flex flex-wrap gap-3 items-center">
             {% if is_registered %}
             <form method="POST" action="/events/{{ event.id }}/unregister">
-                <button type="submit" class="btn-danger" onclick="return confirm('Unregister from this event?')">Unregister</button>
+                <button type="submit" class="btn btn-danger" onclick="return confirm('Unregister from this event?')">Unregister</button>
             </form>
-            <span class="bg-green-100 text-green-700 px-4 py-2 rounded-lg text-sm font-medium">You are registered!</span>
+            <div class="flex items-center gap-2 bg-green-50 text-green-700 rounded-xl px-4 py-2.5 text-sm font-semibold">
+                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/></svg>
+                You are registered!
+            </div>
             {% elif event.is_full() %}
-            <span class="bg-red-100 text-red-700 px-4 py-2 rounded-lg text-sm font-medium">Event is full</span>
+            <div class="bg-red-50 text-red-700 rounded-xl px-4 py-2.5 text-sm font-semibold">Event is full</div>
             {% else %}
             <form method="POST" action="/events/{{ event.id }}/register">
-                <button type="submit" class="btn-primary">Register for Event</button>
+                <button type="submit" class="btn btn-primary">Register for this Event</button>
             </form>
             {% endif %}
+            <a href="/calendar/" class="btn btn-secondary btn-sm ml-auto">My Calendar</a>
         </div>
         {% elif event.status == 'pending' %}
-        <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 text-yellow-800 text-sm">
-            This event is pending teacher approval.
+        <div class="bg-amber-50 border border-amber-200 rounded-xl p-4 text-amber-800 text-sm font-medium">
+            ⏳ This event is awaiting teacher approval before registration opens.
         </div>
         {% elif event.status == 'rejected' %}
-        <div class="bg-red-50 border border-red-200 rounded-lg p-4 text-red-800 text-sm">
-            This event was not approved.
+        <div class="bg-red-50 border border-red-200 rounded-xl p-4 text-red-800 text-sm font-medium">
+            ✗ This event was not approved.
         </div>
         {% endif %}
     </div>

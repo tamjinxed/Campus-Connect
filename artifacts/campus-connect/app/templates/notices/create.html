@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}Post Notice{% endblock %}
+{% block page_title %}Post Notice{% endblock %}
+{% block pt %}Post a Notice{% endblock %}
+{% block header_actions %}
+<a href="/notices/" class="btn btn-secondary btn-sm">← Back</a>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-xl mx-auto">
+    <div class="card">
+        <h2 class="font-bold text-slate-800 text-lg mb-5">Post Campus Notice</h2>
+        {% if not current_user.is_teacher() %}
+        <div class="bg-blue-50 border border-blue-200 rounded-xl p-3 mb-5 text-blue-700 text-sm">
+            📋 Notices from students require teacher approval before being published.
+        </div>
+        {% endif %}
+        <form method="POST" action="/notices/create" class="space-y-4">
+            <div>
+                <label class="form-label">Notice Title *</label>
+                <input type="text" name="title" required placeholder="e.g. Library Closed Tomorrow" class="input-field">
+            </div>
+            <div>
+                <label class="form-label">Content *</label>
+                <textarea name="content" rows="5" required placeholder="Write your notice here..." class="input-field"></textarea>
+            </div>
+            <div>
+                <label class="form-label">Priority</label>
+                <div class="grid grid-cols-3 gap-2">
+                    {% for p, label, color in [('normal','Normal','bg-blue-50 border-blue-200 text-blue-700'), ('important','Important','bg-amber-50 border-amber-200 text-amber-700'), ('urgent','Urgent','bg-red-50 border-red-200 text-red-700')] %}
+                    <label class="relative cursor-pointer">
+                        <input type="radio" name="priority" value="{{ p }}" {% if p == 'normal' %}checked{% endif %} class="sr-only peer">
+                        <div class="p-2.5 border-2 rounded-xl text-center text-sm font-semibold {{ color }} peer-checked:border-current transition-all">
+                            {{ label }}
+                        </div>
+                    </label>
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="flex gap-3 pt-2">
+                <button type="submit" class="btn btn-primary flex-1">Post Notice</button>
+                <a href="/notices/" class="btn btn-secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

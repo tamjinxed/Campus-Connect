@@ -1,40 +1,38 @@
 {% extends "base.html" %}
 {% block title %}My Events{% endblock %}
+{% block page_title %}My Events{% endblock %}
+{% block pt %}My Events{% endblock %}
+{% block header_actions %}<a href="/events/create" class="btn btn-primary btn-sm">+ Create</a>{% endblock %}
+
 {% block content %}
-<div class="space-y-6">
-    <div class="flex items-center justify-between">
-        <h1 class="text-2xl font-bold text-gray-800">My Events</h1>
-        <a href="/events/create" class="btn-primary">+ Create Event</a>
-    </div>
-    {% if events %}
-    <div class="space-y-4">
-        {% for event in events %}
-        <div class="card flex items-start gap-4">
-            <div class="flex-shrink-0 text-center bg-primary-50 rounded-xl p-3 min-w-[60px]">
-                <div class="text-xs text-primary-600 font-medium uppercase">{{ event.date.strftime('%b') }}</div>
-                <div class="text-2xl font-bold text-primary-800">{{ event.date.strftime('%d') }}</div>
-            </div>
-            <div class="flex-1 min-w-0">
-                <div class="flex items-center gap-2 flex-wrap mb-1">
-                    <h3 class="font-semibold text-gray-800">{{ event.title }}</h3>
-                    <span class="badge-{{ event.status }}">{{ event.status }}</span>
-                </div>
-                <p class="text-gray-600 text-sm mb-2">{{ event.description[:100] }}...</p>
-                <div class="flex items-center gap-4 text-xs text-gray-400">
-                    <span>{{ event.date.strftime('%d %b %Y · %I:%M %p') }}</span>
-                    {% if event.location %}<span>📍 {{ event.location }}</span>{% endif %}
-                    <span>{{ event.registration_count() }} registered</span>
-                </div>
-            </div>
-            <a href="/events/{{ event.id }}" class="btn-secondary text-xs flex-shrink-0">View</a>
+{% if events %}
+<div class="space-y-3">
+    {% for event in events %}
+    <div class="card flex items-start gap-4">
+        <div class="flex-shrink-0 w-14 text-center bg-primary-50 rounded-xl py-2">
+            <div class="text-[10px] text-primary-500 font-bold uppercase">{{ event.date.strftime('%b') }}</div>
+            <div class="text-xl font-black text-primary-800">{{ event.date.strftime('%d') }}</div>
         </div>
-        {% endfor %}
+        <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-2 flex-wrap mb-1">
+                <h3 class="font-bold text-slate-800">{{ event.title }}</h3>
+                <span class="badge badge-{{ event.status }}">{{ event.status }}</span>
+            </div>
+            <p class="text-slate-500 text-sm line-clamp-1">{{ event.description }}</p>
+            <div class="flex items-center gap-3 mt-1.5 text-xs text-slate-400">
+                <span>{{ event.date.strftime('%d %b %Y · %I:%M %p') }}</span>
+                {% if event.location %}<span>📍 {{ event.location }}</span>{% endif %}
+                <span>{{ event.registration_count() }} registered</span>
+            </div>
+        </div>
+        <a href="/events/{{ event.id }}" class="btn btn-secondary btn-sm flex-shrink-0">View</a>
     </div>
-    {% else %}
-    <div class="card text-center py-12">
-        <p class="text-gray-400 mb-4">No events yet</p>
-        <a href="/events/create" class="btn-primary">Create your first event</a>
-    </div>
-    {% endif %}
+    {% endfor %}
 </div>
+{% else %}
+<div class="card text-center py-12">
+    <p class="text-slate-400 mb-4">No events yet</p>
+    <a href="/events/create" class="btn btn-primary">Create your first event</a>
+</div>
+{% endif %}
 {% endblock %}

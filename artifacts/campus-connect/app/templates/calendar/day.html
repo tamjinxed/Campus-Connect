@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %}{{ date.strftime('%B %d, %Y') }}{% endblock %}
+{% block page_title %}{{ date.strftime('%B %d') }}{% endblock %}
+{% block pt %}{{ date.strftime('%B %d, %Y') }}{% endblock %}
+{% block header_actions %}
+<a href="/calendar/?year={{ date.year }}&month={{ date.month }}" class="btn btn-secondary btn-sm">← Back to Calendar</a>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto">
+    <h2 class="text-xl font-bold text-slate-800 mb-4">{{ date.strftime('%A, %B %d, %Y') }}</h2>
+    {% if events %}
+    <div class="space-y-4">
+        {% for event in events %}
+        <div class="card">
+            <div class="flex items-start gap-4">
+                <div class="flex-shrink-0 w-14 bg-primary-50 rounded-xl p-2 text-center">
+                    <div class="text-[10px] font-bold text-primary-500 uppercase">{{ event.date.strftime('%b') }}</div>
+                    <div class="text-xl font-black text-primary-800 leading-none">{{ event.date.strftime('%d') }}</div>
+                    <div class="text-[10px] text-primary-400">{{ event.date.strftime('%I:%M') }}</div>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <div class="flex items-center gap-2 flex-wrap mb-1">
+                        <h3 class="font-bold text-slate-800">{{ event.title }}</h3>
+                        <span class="category-badge cat-{{ event.category }}">{{ event.category }}</span>
+                        {% if event.id in user_reg_ids %}<span class="badge badge-approved">Registered</span>{% endif %}
+                    </div>
+                    <p class="text-slate-500 text-sm mb-2">{{ event.description[:200] }}{% if event.description|length > 200 %}...{% endif %}</p>
+                    <div class="flex items-center gap-4 text-xs text-slate-400">
+                        <span>🕐 {{ event.date.strftime('%I:%M %p') }}</span>
+                        {% if event.location %}<span>📍 {{ event.location }}</span>{% endif %}
+                        <span>👥 {{ event.registration_count() }} going</span>
+                    </div>
+                    <div class="mt-3 flex gap-2">
+                        <a href="/events/{{ event.id }}" class="btn btn-secondary btn-sm">View Details</a>
+                        {% if event.id not in user_reg_ids and not event.is_full() %}
+                        <form method="POST" action="/events/{{ event.id }}/register">
+                            <button class="btn btn-primary btn-sm">Register</button>
+                        </form>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="card text-center py-12">
+        <svg class="w-12 h-12 text-slate-300 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+        <p class="text-slate-400 font-medium">No events on this day</p>
+        <a href="/events/create" class="btn btn-primary btn-sm mt-3">Create an Event</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
