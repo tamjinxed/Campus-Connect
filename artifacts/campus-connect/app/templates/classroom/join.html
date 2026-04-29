@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}Join Classroom{% endblock %}
+{% block content %}
+<div class="max-w-md mx-auto">
+    <a href="/classroom/" class="text-primary-600 hover:underline text-sm mb-4 block">← Back to Classrooms</a>
+    <div class="card">
+        <div class="text-center mb-6">
+            <div class="w-16 h-16 bg-purple-100 rounded-2xl flex items-center justify-center mx-auto mb-3">
+                <svg class="w-8 h-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/></svg>
+            </div>
+            <h1 class="text-2xl font-bold text-gray-800">Join a Classroom</h1>
+            <p class="text-gray-500 text-sm mt-1">Enter the class code given by your teacher</p>
+        </div>
+        <form method="POST" action="/classroom/join" class="space-y-5">
+            <div>
+                <label class="form-label">Classroom Code</label>
+                <input type="text" name="code" required placeholder="e.g. ABC123" 
+                    class="input-field text-center text-2xl font-mono tracking-widest uppercase"
+                    maxlength="6" style="letter-spacing: 0.3em"
+                    oninput="this.value = this.value.toUpperCase()">
+                <p class="text-xs text-gray-400 mt-1 text-center">6-character code</p>
+            </div>
+            <button type="submit" class="btn-primary w-full py-3 text-base">Join Classroom</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

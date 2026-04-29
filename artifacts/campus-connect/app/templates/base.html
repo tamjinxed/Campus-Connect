@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}CampusConnect{% endblock %} | CampusConnect Hub</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: { 50:'#eff6ff',100:'#dbeafe',200:'#bfdbfe',300:'#93c5fd',400:'#60a5fa',500:'#3b82f6',600:'#2563eb',700:'#1d4ed8',800:'#1e40af',900:'#1e3a8a' },
+                        accent: { 400:'#fb923c',500:'#f97316',600:'#ea580c' }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .nav-link { @apply text-gray-300 hover:text-white hover:bg-primary-700 px-3 py-2 rounded-md text-sm font-medium transition-colors; }
+        .nav-link-active { @apply text-white bg-primary-800 px-3 py-2 rounded-md text-sm font-medium; }
+        .btn-primary { @apply bg-primary-600 hover:bg-primary-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors; }
+        .btn-secondary { @apply bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-2 px-4 rounded-lg transition-colors; }
+        .btn-danger { @apply bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors; }
+        .btn-success { @apply bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors; }
+        .card { @apply bg-white rounded-xl shadow-sm border border-gray-100 p-6; }
+        .badge-student { @apply bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded-full; }
+        .badge-teacher { @apply bg-purple-100 text-purple-800 text-xs font-medium px-2.5 py-0.5 rounded-full; }
+        .badge-pending { @apply bg-yellow-100 text-yellow-800 text-xs font-medium px-2.5 py-0.5 rounded-full; }
+        .badge-approved { @apply bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded-full; }
+        .badge-rejected { @apply bg-red-100 text-red-800 text-xs font-medium px-2.5 py-0.5 rounded-full; }
+        .input-field { @apply w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent; }
+        .form-label { @apply block text-sm font-medium text-gray-700 mb-1; }
+        [x-cloak] { display: none !important; }
+    </style>
+    {% block head %}{% endblock %}
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- Top Navigation -->
+    <nav class="bg-primary-900 shadow-lg sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center gap-2">
+                    <a href="/" class="flex items-center gap-2 text-white font-bold text-xl">
+                        <svg class="w-8 h-8 text-primary-300" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M12 3L1 9l11 6 9-4.91V17h2V9L12 3zM5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82z"/>
+                        </svg>
+                        <span class="hidden sm:block">CampusConnect</span>
+                    </a>
+                </div>
+                {% if current_user.is_authenticated %}
+                <div class="hidden md:flex items-center space-x-1">
+                    <a href="/" class="nav-link">Feed</a>
+                    <a href="/events" class="nav-link">Events</a>
+                    <a href="/classroom/" class="nav-link">Classroom</a>
+                    <a href="/chat/" class="nav-link">Chat</a>
+                    {% if current_user.is_teacher() %}
+                    <a href="/moderation" class="nav-link flex items-center gap-1">
+                        Moderation
+                        <span class="bg-accent-500 text-white text-xs rounded-full px-1.5 py-0.5" id="pending-count"></span>
+                    </a>
+                    {% endif %}
+                </div>
+                <div class="flex items-center gap-3">
+                    <a href="/auth/profile" class="flex items-center gap-2 text-gray-300 hover:text-white transition-colors">
+                        <div class="w-8 h-8 bg-primary-600 rounded-full flex items-center justify-center text-white text-sm font-bold">
+                            {{ current_user.username[0].upper() }}
+                        </div>
+                        <span class="hidden sm:block text-sm">{{ current_user.username }}</span>
+                        <span class="{% if current_user.is_teacher() %}badge-teacher{% else %}badge-student{% endif %}">{{ current_user.role }}</span>
+                    </a>
+                    <a href="/auth/logout" class="text-gray-400 hover:text-red-400 text-sm transition-colors">Logout</a>
+                </div>
+                <!-- Mobile menu button -->
+                <button onclick="toggleMobileMenu()" class="md:hidden text-gray-300 hover:text-white p-2">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+                    </svg>
+                </button>
+                {% endif %}
+            </div>
+        </div>
+        <!-- Mobile Menu -->
+        {% if current_user.is_authenticated %}
+        <div id="mobile-menu" class="hidden md:hidden bg-primary-800 border-t border-primary-700">
+            <div class="px-4 py-3 space-y-1">
+                <a href="/" class="block nav-link">Feed</a>
+                <a href="/events" class="block nav-link">Events</a>
+                <a href="/classroom/" class="block nav-link">Classroom</a>
+                <a href="/chat/" class="block nav-link">Chat</a>
+                {% if current_user.is_teacher() %}
+                <a href="/moderation" class="block nav-link">Moderation</a>
+                {% endif %}
+                <a href="/auth/profile" class="block nav-link">Profile</a>
+                <a href="/auth/logout" class="block text-red-400 hover:text-red-300 px-3 py-2 text-sm">Logout</a>
+            </div>
+        </div>
+        {% endif %}
+    </nav>
+
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <div class="max-w-7xl mx-auto px-4 pt-4 space-y-2" id="flash-container">
+        {% for category, message in messages %}
+        <div class="flex items-center justify-between p-4 rounded-lg text-sm font-medium
+            {% if category == 'success' %}bg-green-50 text-green-800 border border-green-200
+            {% elif category == 'danger' %}bg-red-50 text-red-800 border border-red-200
+            {% elif category == 'warning' %}bg-yellow-50 text-yellow-800 border border-yellow-200
+            {% else %}bg-blue-50 text-blue-800 border border-blue-200{% endif %}">
+            <span>{{ message }}</span>
+            <button onclick="this.parentElement.remove()" class="ml-4 opacity-60 hover:opacity-100">✕</button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    {% endwith %}
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="mt-12 bg-primary-900 text-gray-400 text-center text-sm py-6">
+        <p>© 2025 CampusConnect Hub | Bangladesh University of Business and Technology (BUBT)</p>
+    </footer>
+
+    <script>
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobile-menu');
+            menu.classList.toggle('hidden');
+        }
+        setTimeout(() => {
+            const container = document.getElementById('flash-container');
+            if (container) container.style.transition = 'opacity 0.5s';
+            if (container) container.style.opacity = '0';
+            setTimeout(() => { if (container) container.remove(); }, 500);
+        }, 4000);
+    </script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

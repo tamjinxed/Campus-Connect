@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}Profile{% endblock %}
+{% block content %}
+<div class="max-w-2xl mx-auto">
+    <h1 class="text-2xl font-bold text-gray-800 mb-6">My Profile</h1>
+    <div class="card mb-6">
+        <div class="flex items-center gap-4 mb-6">
+            <div class="w-16 h-16 bg-primary-600 rounded-full flex items-center justify-center text-white text-2xl font-bold">
+                {{ current_user.username[0].upper() }}
+            </div>
+            <div>
+                <h2 class="text-xl font-bold text-gray-800">{{ current_user.username }}</h2>
+                <p class="text-gray-500 text-sm">{{ current_user.email }}</p>
+                <span class="{% if current_user.is_teacher() %}badge-teacher{% else %}badge-student{% endif %}">{{ current_user.role }}</span>
+            </div>
+        </div>
+        <div class="grid grid-cols-2 gap-4 text-sm text-gray-600 mb-6">
+            <div><span class="font-medium">Department:</span> {{ current_user.department or 'Not set' }}</div>
+            <div><span class="font-medium">Intake:</span> {{ current_user.intake or 'N/A' }}</div>
+            <div><span class="font-medium">Member since:</span> {{ current_user.created_at.strftime('%b %Y') }}</div>
+        </div>
+        <form method="POST" action="/auth/profile" class="space-y-4">
+            <div>
+                <label class="form-label">Bio</label>
+                <textarea name="bio" rows="3" placeholder="Tell others about yourself..."
+                    class="input-field">{{ current_user.bio or '' }}</textarea>
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="form-label">Department</label>
+                    <select name="department" class="input-field">
+                        <option value="">Select...</option>
+                        {% for dept in ['CSE','EEE','BBA','English','Mathematics','Physics'] %}
+                        <option value="{{ dept }}" {% if current_user.department == dept %}selected{% endif %}>{{ dept }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <label class="form-label">Intake</label>
+                    <input type="text" name="intake" value="{{ current_user.intake or '' }}" placeholder="e.g. 58th" class="input-field">
+                </div>
+            </div>
+            <button type="submit" class="btn-primary">Save Changes</button>
+        </form>
+    </div>
+    <div class="flex gap-4">
+        <a href="/my-events" class="btn-secondary">My Events</a>
+        <a href="/classroom/" class="btn-secondary">My Classrooms</a>
+    </div>
+</div>
+{% endblock %}

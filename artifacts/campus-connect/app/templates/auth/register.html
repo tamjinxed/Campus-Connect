@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register | CampusConnect Hub</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>tailwind.config = { theme: { extend: { colors: { primary: { 600:'#2563eb', 700:'#1d4ed8', 800:'#1e40af', 900:'#1e3a8a' } } } } }</script>
+</head>
+<body class="bg-gradient-to-br from-primary-900 via-primary-800 to-blue-900 min-h-screen flex items-center justify-center p-4">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <div class="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 space-y-2 w-full max-w-sm px-4">
+        {% for category, message in messages %}
+        <div class="p-3 rounded-lg text-sm font-medium text-center
+            {% if category == 'success' %}bg-green-100 text-green-800{% elif category == 'danger' %}bg-red-100 text-red-800{% else %}bg-blue-100 text-blue-800{% endif %}">
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    {% endwith %}
+
+    <div class="w-full max-w-lg">
+        <div class="text-center mb-6">
+            <a href="/auth/login" class="inline-flex items-center gap-2 text-white font-bold text-2xl">
+                <svg class="w-8 h-8 text-blue-300" fill="currentColor" viewBox="0 0 24 24"><path d="M12 3L1 9l11 6 9-4.91V17h2V9L12 3zM5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82z"/></svg>
+                CampusConnect
+            </a>
+        </div>
+        <div class="bg-white rounded-2xl shadow-2xl p-8">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6">Create your account</h2>
+            <form method="POST" action="/auth/register" class="space-y-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Username</label>
+                        <input type="text" name="username" required placeholder="john_doe"
+                            class="w-full border border-gray-300 rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                        <input type="email" name="email" required placeholder="you@bubt.edu.bd"
+                            class="w-full border border-gray-300 rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Role</label>
+                    <select name="role" id="role-select" onchange="toggleIntake()" class="w-full border border-gray-300 rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="student">Student</option>
+                        <option value="teacher">Teacher</option>
+                    </select>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Department</label>
+                        <select name="department" class="w-full border border-gray-300 rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="">Select department</option>
+                            <option value="CSE">CSE - Computer Science & Engineering</option>
+                            <option value="EEE">EEE - Electrical & Electronics</option>
+                            <option value="BBA">BBA - Business Administration</option>
+                            <option value="English">English</option>
+                            <option value="Mathematics">Mathematics</option>
+                            <option value="Physics">Physics</option>
+                        </select>
+                    </div>
+                    <div id="intake-field">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Intake</label>
+                        <input type="text" name="intake" placeholder="e.g. 58th"
+                            class="w-full border border-gray-300 rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                        <input type="password" name="password" required placeholder="Min. 6 characters"
+                            class="w-full border border-gray-300 rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Confirm Password</label>
+                        <input type="password" name="confirm_password" required placeholder="Repeat password"
+                            class="w-full border border-gray-300 rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                </div>
+                <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition-colors text-base mt-2">
+                    Create Account
+                </button>
+            </form>
+            <p class="mt-5 text-center text-sm text-gray-600">
+                Already have an account? <a href="/auth/login" class="text-blue-600 hover:text-blue-800 font-semibold">Sign in</a>
+            </p>
+        </div>
+    </div>
+    <script>
+        function toggleIntake() {
+            const role = document.getElementById('role-select').value;
+            const intakeField = document.getElementById('intake-field');
+            intakeField.style.display = role === 'teacher' ? 'none' : 'block';
+        }
+    </script>
+</body>
+</html>

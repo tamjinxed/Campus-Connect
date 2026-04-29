@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block title %}Create Event{% endblock %}
+{% block content %}
+<div class="max-w-2xl mx-auto">
+    <a href="/events" class="text-primary-600 hover:underline text-sm mb-4 block">← Back to Events</a>
+    <div class="card">
+        <h1 class="text-2xl font-bold text-gray-800 mb-6">Create New Event</h1>
+        {% if not current_user.is_teacher() %}
+        <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-5 text-blue-700 text-sm">
+            Events created by students require teacher approval before they appear on the feed.
+        </div>
+        {% endif %}
+        <form method="POST" action="/events/create" class="space-y-5">
+            <div>
+                <label class="form-label">Event Title *</label>
+                <input type="text" name="title" required placeholder="e.g. CSE Workshop on AI" class="input-field">
+            </div>
+            <div>
+                <label class="form-label">Description *</label>
+                <textarea name="description" rows="4" required placeholder="Describe the event..." class="input-field"></textarea>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <label class="form-label">Date & Time *</label>
+                    <input type="datetime-local" name="date" required class="input-field">
+                </div>
+                <div>
+                    <label class="form-label">Category</label>
+                    <select name="category" class="input-field">
+                        {% for cat in ['general','academic','sports','cultural','workshop','seminar','club'] %}
+                        <option value="{{ cat }}">{{ cat.title() }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <label class="form-label">Location</label>
+                    <input type="text" name="location" placeholder="e.g. Main Auditorium, BUBT" class="input-field">
+                </div>
+                <div>
+                    <label class="form-label">Max Participants (optional)</label>
+                    <input type="number" name="max_participants" placeholder="Leave blank for unlimited" min="1" class="input-field">
+                </div>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <label class="form-label">Department (optional)</label>
+                    <select name="department" class="input-field">
+                        <option value="">All Departments</option>
+                        {% for dept in ['CSE','EEE','BBA','English','Mathematics','Physics'] %}
+                        <option value="{{ dept }}">{{ dept }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <label class="form-label">Tags (comma-separated)</label>
+                    <input type="text" name="tags" placeholder="e.g. AI, Machine Learning, Workshop" class="input-field">
+                </div>
+            </div>
+            <div class="flex gap-3 pt-2">
+                <button type="submit" class="btn-primary">Create Event</button>
+                <a href="/events" class="btn-secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

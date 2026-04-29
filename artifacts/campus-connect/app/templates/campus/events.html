@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% block title %}Events{% endblock %}
+{% block content %}
+<div class="space-y-6">
+    <div class="flex items-center justify-between flex-wrap gap-4">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-800">Events</h1>
+            <p class="text-gray-500 text-sm">Discover and register for campus events</p>
+        </div>
+        <a href="/events/create" class="btn-primary">+ Create Event</a>
+    </div>
+
+    <!-- Search & Filter -->
+    <div class="card">
+        <form method="GET" action="/events" class="flex flex-wrap gap-3">
+            <input type="text" name="search" value="{{ search }}" placeholder="Search events..." class="input-field flex-1 min-w-[200px]">
+            <select name="category" class="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500 min-w-[140px]">
+                <option value="">All Categories</option>
+                {% for cat in ['general','academic','sports','cultural','workshop','seminar','club'] %}
+                <option value="{{ cat }}" {% if category == cat %}selected{% endif %}>{{ cat.title() }}</option>
+                {% endfor %}
+            </select>
+            <button type="submit" class="btn-primary">Search</button>
+            {% if search or category %}
+            <a href="/events" class="btn-secondary">Clear</a>
+            {% endif %}
+        </form>
+    </div>
+
+    <!-- Events Grid -->
+    {% if events %}
+    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+        {% for event in events %}
+        <div class="bg-white rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow overflow-hidden">
+            <div class="bg-gradient-to-r from-primary-600 to-primary-700 p-4 text-white">
+                <div class="flex items-start justify-between">
+                    <div>
+                        <span class="text-xs bg-white bg-opacity-20 px-2 py-0.5 rounded-full">{{ event.category }}</span>
+                        <h3 class="font-bold mt-2 text-lg leading-tight">{{ event.title }}</h3>
+                    </div>
+                    <div class="text-right flex-shrink-0 ml-2">
+                        <div class="text-2xl font-bold">{{ event.date.strftime('%d') }}</div>
+                        <div class="text-xs opacity-80">{{ event.date.strftime('%b %Y') }}</div>
+                    </div>
+                </div>
+            </div>
+            <div class="p-4">
+                <p class="text-gray-600 text-sm line-clamp-2 mb-3">{{ event.description }}</p>
+                <div class="space-y-1 text-xs text-gray-500 mb-4">
+                    <div class="flex items-center gap-1">🕐 {{ event.date.strftime('%A, %d %b · %I:%M %p') }}</div>
+                    {% if event.location %}<div class="flex items-center gap-1">📍 {{ event.location }}</div>{% endif %}
+                    <div class="flex items-center gap-1">👤 By {{ event.organizer.username }}</div>
+                    <div class="flex items-center gap-1">
+                        🧑‍🤝‍🧑 {{ event.registration_count() }} registered
+                        {% if event.max_participants %} / {{ event.max_participants }}{% endif %}
+                    </div>
+                </div>
+                <div class="flex gap-2">
+                    <a href="/events/{{ event.id }}" class="btn-secondary text-xs flex-1 text-center py-2">View Details</a>
+                    {% if event.id in user_registrations %}
+                    <span class="bg-green-100 text-green-700 text-xs px-3 py-2 rounded-lg font-medium">Registered</span>
+                    {% elif not event.is_full() %}
+                    <form method="POST" action="/events/{{ event.id }}/register" class="flex-1">
+                        <button type="submit" class="btn-primary text-xs w-full py-2">Register</button>
+                    </form>
+                    {% else %}
+                    <span class="bg-red-100 text-red-700 text-xs px-3 py-2 rounded-lg font-medium">Full</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="card text-center py-16">
+        <svg class="w-16 h-16 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+        <p class="text-gray-400 text-lg mb-2">No events found</p>
+        <a href="/events/create" class="btn-primary mt-2 inline-block">Create the First Event</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

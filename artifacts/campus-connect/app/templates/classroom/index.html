@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block title %}Classrooms{% endblock %}
+{% block content %}
+<div class="space-y-6">
+    <div class="flex items-center justify-between flex-wrap gap-4">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-800">Classrooms</h1>
+            <p class="text-gray-500 text-sm">{{ 'Manage your classes' if current_user.is_teacher() else 'Your enrolled classes' }}</p>
+        </div>
+        {% if current_user.is_teacher() %}
+        <a href="/classroom/create" class="btn-primary">+ Create Classroom</a>
+        {% else %}
+        <a href="/classroom/join" class="btn-primary">+ Join Classroom</a>
+        {% endif %}
+    </div>
+
+    {% if classrooms %}
+    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+        {% for classroom in classrooms %}
+        <div class="bg-white rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow p-5">
+            <div class="flex items-start justify-between mb-3">
+                <div class="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                    <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+                </div>
+                <span class="bg-gray-100 text-gray-600 text-xs font-mono px-2 py-1 rounded font-semibold">{{ classroom.code }}</span>
+            </div>
+            <h3 class="font-bold text-gray-800 mb-1">{{ classroom.name }}</h3>
+            {% if classroom.description %}
+            <p class="text-gray-500 text-sm mb-3 line-clamp-2">{{ classroom.description }}</p>
+            {% endif %}
+            <div class="flex items-center gap-3 text-xs text-gray-400 mb-4">
+                {% if classroom.department %}<span>{{ classroom.department }}</span>{% endif %}
+                {% if classroom.section %}<span>Section {{ classroom.section }}</span>{% endif %}
+                <span>{{ classroom.member_count() }} students</span>
+                <span>{{ classroom.materials|length }} materials</span>
+            </div>
+            {% if not current_user.is_teacher() %}
+            <p class="text-xs text-gray-400 mb-3">Teacher: {{ classroom.teacher.username }}</p>
+            {% endif %}
+            <div class="flex gap-2">
+                <a href="/classroom/{{ classroom.id }}" class="btn-primary text-sm flex-1 text-center">Open</a>
+                <a href="/chat/classroom/{{ classroom.id }}" class="btn-secondary text-sm px-3">Chat</a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="card text-center py-16">
+        <svg class="w-16 h-16 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+        <p class="text-gray-400 text-lg mb-2">No classrooms yet</p>
+        {% if current_user.is_teacher() %}
+        <a href="/classroom/create" class="btn-primary mt-2 inline-block">Create a Classroom</a>
+        {% else %}
+        <a href="/classroom/join" class="btn-primary mt-2 inline-block">Join a Classroom</a>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

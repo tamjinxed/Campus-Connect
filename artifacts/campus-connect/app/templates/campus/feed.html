@@ -1,0 +1,181 @@
+{% extends "base.html" %}
+{% block title %}Campus Feed{% endblock %}
+{% block content %}
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <!-- Main Feed -->
+    <div class="lg:col-span-2 space-y-6">
+        <!-- Header -->
+        <div class="flex items-center justify-between">
+            <div>
+                <h1 class="text-2xl font-bold text-gray-800">Campus Feed</h1>
+                <p class="text-gray-500 text-sm">Stay up to date with everything on campus</p>
+            </div>
+            <div class="flex gap-2">
+                <a href="/events/create" class="btn-primary text-sm">+ Create Event</a>
+                <a href="/announcements/create" class="btn-secondary text-sm">+ Post</a>
+            </div>
+        </div>
+
+        <!-- Announcements -->
+        {% if announcements %}
+        <div class="space-y-3">
+            <h2 class="text-lg font-semibold text-gray-700 flex items-center gap-2">
+                <svg class="w-5 h-5 text-accent-500" fill="currentColor" viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>
+                Announcements
+            </h2>
+            {% for ann in announcements %}
+            <div class="card flex items-start gap-3">
+                <div class="flex-shrink-0 w-10 h-10 rounded-full bg-{{ 'red' if ann.priority == 'urgent' else 'blue' }}-100 flex items-center justify-center">
+                    <svg class="w-5 h-5 text-{{ 'red' if ann.priority == 'urgent' else 'blue' }}-600" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <div class="flex items-center gap-2 flex-wrap">
+                        <h3 class="font-semibold text-gray-800">{{ ann.title }}</h3>
+                        {% if ann.priority == 'urgent' %}<span class="bg-red-100 text-red-700 text-xs px-2 py-0.5 rounded-full font-medium">URGENT</span>{% endif %}
+                    </div>
+                    <p class="text-gray-600 text-sm mt-1">{{ ann.content[:180] }}{% if ann.content|length > 180 %}...{% endif %}</p>
+                    <p class="text-gray-400 text-xs mt-1">{{ ann.author.username }} · {{ ann.created_at.strftime('%b %d, %Y') }}</p>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Events Feed -->
+        <div>
+            <div class="flex items-center justify-between mb-3">
+                <h2 class="text-lg font-semibold text-gray-700">Upcoming Events</h2>
+                <a href="/events" class="text-primary-600 text-sm hover:underline">View all →</a>
+            </div>
+            {% if events %}
+            <div class="space-y-4">
+                {% for event in events[:8] %}
+                <div class="card hover:shadow-md transition-shadow cursor-pointer" onclick="window.location='/events/{{ event.id }}'">
+                    <div class="flex items-start gap-4">
+                        <div class="flex-shrink-0 text-center bg-primary-50 rounded-xl p-3 min-w-[60px]">
+                            <div class="text-xs text-primary-600 font-medium uppercase">{{ event.date.strftime('%b') }}</div>
+                            <div class="text-2xl font-bold text-primary-800">{{ event.date.strftime('%d') }}</div>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-center gap-2 flex-wrap">
+                                <h3 class="font-semibold text-gray-800">{{ event.title }}</h3>
+                                <span class="bg-blue-100 text-blue-700 text-xs px-2 py-0.5 rounded-full">{{ event.category }}</span>
+                                {% if event.id in user_registrations %}<span class="bg-green-100 text-green-700 text-xs px-2 py-0.5 rounded-full">Registered</span>{% endif %}
+                            </div>
+                            <p class="text-gray-600 text-sm mt-1">{{ event.description[:120] }}{% if event.description|length > 120 %}...{% endif %}</p>
+                            <div class="flex items-center gap-4 mt-2 text-xs text-gray-400">
+                                <span>🕐 {{ event.date.strftime('%I:%M %p') }}</span>
+                                {% if event.location %}<span>📍 {{ event.location }}</span>{% endif %}
+                                <span>👤 {{ event.organizer.username }}</span>
+                                <span>{{ event.registration_count() }} registered</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="card text-center py-12">
+                <svg class="w-12 h-12 text-gray-300 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                <p class="text-gray-400">No events yet. Be the first to create one!</p>
+                <a href="/events/create" class="btn-primary mt-4 inline-block">Create Event</a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="space-y-5">
+        <!-- Profile card -->
+        <div class="card">
+            <div class="flex items-center gap-3 mb-4">
+                <div class="w-12 h-12 bg-primary-600 rounded-full flex items-center justify-center text-white text-lg font-bold">
+                    {{ current_user.username[0].upper() }}
+                </div>
+                <div>
+                    <h3 class="font-semibold text-gray-800">{{ current_user.username }}</h3>
+                    <span class="{% if current_user.is_teacher() %}badge-teacher{% else %}badge-student{% endif %}">{{ current_user.role }}</span>
+                </div>
+            </div>
+            {% if current_user.department %}
+            <p class="text-sm text-gray-500">{{ current_user.department }}{% if current_user.intake %} · {{ current_user.intake }}{% endif %}</p>
+            {% endif %}
+            <div class="mt-3 pt-3 border-t border-gray-100 flex gap-2">
+                <a href="/auth/profile" class="btn-secondary text-xs flex-1 text-center">Edit Profile</a>
+                <a href="/chat/global" class="btn-primary text-xs flex-1 text-center">Open Chat</a>
+            </div>
+        </div>
+
+        <!-- Smart Discovery -->
+        {% if dept_events %}
+        <div class="card">
+            <h3 class="font-semibold text-gray-800 mb-3 flex items-center gap-2">
+                <svg class="w-4 h-4 text-accent-500" fill="currentColor" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0116 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 019.5 16 6.5 6.5 0 013 9.5 6.5 6.5 0 019.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5z"/></svg>
+                For You ({{ current_user.department }})
+            </h3>
+            <div class="space-y-2">
+                {% for event in dept_events %}
+                <a href="/events/{{ event.id }}" class="block p-2 rounded-lg hover:bg-gray-50 transition-colors">
+                    <p class="text-sm font-medium text-gray-800 truncate">{{ event.title }}</p>
+                    <p class="text-xs text-gray-400">{{ event.date.strftime('%b %d · %I:%M %p') }}</p>
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Upcoming -->
+        <div class="card">
+            <h3 class="font-semibold text-gray-800 mb-3">Next Up</h3>
+            {% if upcoming %}
+            <div class="space-y-2">
+                {% for event in upcoming %}
+                <a href="/events/{{ event.id }}" class="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 transition-colors">
+                    <div class="text-center bg-primary-50 rounded-lg px-2 py-1 min-w-[44px]">
+                        <div class="text-xs text-primary-600 font-medium">{{ event.date.strftime('%b') }}</div>
+                        <div class="text-lg font-bold text-primary-800">{{ event.date.strftime('%d') }}</div>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-sm font-medium text-gray-800 truncate">{{ event.title }}</p>
+                        <p class="text-xs text-gray-400">{{ event.date.strftime('%I:%M %p') }}</p>
+                    </div>
+                </a>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p class="text-gray-400 text-sm">No upcoming events</p>
+            {% endif %}
+        </div>
+
+        <!-- Quick links -->
+        <div class="card">
+            <h3 class="font-semibold text-gray-800 mb-3">Quick Links</h3>
+            <div class="grid grid-cols-2 gap-2">
+                <a href="/events" class="flex flex-col items-center gap-1 p-3 bg-blue-50 rounded-xl hover:bg-blue-100 transition-colors">
+                    <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                    <span class="text-xs font-medium text-blue-700">Events</span>
+                </a>
+                <a href="/classroom/" class="flex flex-col items-center gap-1 p-3 bg-purple-50 rounded-xl hover:bg-purple-100 transition-colors">
+                    <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+                    <span class="text-xs font-medium text-purple-700">Classroom</span>
+                </a>
+                <a href="/chat/global" class="flex flex-col items-center gap-1 p-3 bg-green-50 rounded-xl hover:bg-green-100 transition-colors">
+                    <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+                    <span class="text-xs font-medium text-green-700">Chat</span>
+                </a>
+                {% if current_user.is_teacher() %}
+                <a href="/moderation" class="flex flex-col items-center gap-1 p-3 bg-orange-50 rounded-xl hover:bg-orange-100 transition-colors">
+                    <svg class="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+                    <span class="text-xs font-medium text-orange-700">Moderate</span>
+                </a>
+                {% else %}
+                <a href="/my-events" class="flex flex-col items-center gap-1 p-3 bg-orange-50 rounded-xl hover:bg-orange-100 transition-colors">
+                    <svg class="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"/></svg>
+                    <span class="text-xs font-medium text-orange-700">My Events</span>
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

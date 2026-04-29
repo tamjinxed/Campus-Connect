@@ -1,0 +1,149 @@
+{% extends "base.html" %}
+{% block title %}{{ room_name }}{% endblock %}
+{% block head %}
+<style>
+    #chat-messages { scroll-behavior: smooth; }
+    .message-bubble-mine { @apply bg-primary-600 text-white rounded-2xl rounded-br-sm px-4 py-2 max-w-xs sm:max-w-md; }
+    .message-bubble-other { @apply bg-white border border-gray-200 text-gray-800 rounded-2xl rounded-bl-sm px-4 py-2 max-w-xs sm:max-w-md; }
+</style>
+{% endblock %}
+{% block content %}
+<div class="flex flex-col h-[calc(100vh-200px)] max-w-3xl mx-auto">
+    <!-- Chat Header -->
+    <div class="bg-white rounded-t-xl border border-gray-200 px-5 py-4 flex items-center gap-3 flex-shrink-0">
+        <a href="/chat/" class="text-gray-400 hover:text-gray-600">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+        </a>
+        <div class="w-10 h-10 rounded-xl flex items-center justify-center {% if room_type == 'global' %}bg-primary-100{% else %}bg-purple-100{% endif %} flex-shrink-0">
+            <svg class="w-5 h-5 {% if room_type == 'global' %}text-primary-600{% else %}text-purple-600{% endif %}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+        </div>
+        <div>
+            <h2 class="font-bold text-gray-800">{{ room_name }}</h2>
+            <p class="text-xs text-gray-400" id="connection-status">Connecting...</p>
+        </div>
+        <div class="ml-auto flex items-center gap-2">
+            <div class="w-2 h-2 rounded-full bg-gray-300" id="status-dot"></div>
+        </div>
+    </div>
+
+    <!-- Messages -->
+    <div id="chat-messages" class="flex-1 overflow-y-auto bg-gray-50 border-l border-r border-gray-200 px-4 py-4 space-y-3">
+        <!-- Existing messages -->
+        {% for msg in messages %}
+        <div class="flex {% if msg.sender_id == current_user.id %}justify-end{% else %}justify-start{% endif %} items-end gap-2">
+            {% if msg.sender_id != current_user.id %}
+            <div class="w-7 h-7 rounded-full bg-primary-200 flex items-center justify-center text-primary-800 text-xs font-bold flex-shrink-0">
+                {{ msg.sender.username[0].upper() }}
+            </div>
+            {% endif %}
+            <div>
+                {% if msg.sender_id != current_user.id %}
+                <p class="text-xs text-gray-400 mb-1 ml-1">{{ msg.sender.username }} 
+                    <span class="{% if msg.sender.role == 'teacher' %}text-purple-500{% else %}text-blue-400{% endif %}">· {{ msg.sender.role }}</span>
+                </p>
+                {% endif %}
+                <div class="{% if msg.sender_id == current_user.id %}bg-primary-600 text-white{% else %}bg-white border border-gray-200 text-gray-800{% endif %} rounded-2xl px-4 py-2 max-w-xs sm:max-w-md {% if msg.sender_id == current_user.id %}rounded-br-sm{% else %}rounded-bl-sm{% endif %}">
+                    <p class="text-sm">{{ msg.content }}</p>
+                </div>
+                <p class="text-xs text-gray-300 mt-0.5 {% if msg.sender_id == current_user.id %}text-right{% endif %}">{{ msg.created_at.strftime('%H:%M') }}</p>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Message Input -->
+    <div class="bg-white rounded-b-xl border border-gray-200 p-4 flex-shrink-0">
+        <form id="message-form" class="flex gap-3">
+            <input type="text" id="message-input" placeholder="Type a message..." 
+                class="flex-1 border border-gray-300 rounded-full px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                autocomplete="off">
+            <button type="submit" 
+                class="bg-primary-600 hover:bg-primary-700 text-white rounded-full w-10 h-10 flex items-center justify-center transition-colors flex-shrink-0">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/></svg>
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+    const CURRENT_USER = "{{ current_user.username }}";
+    const CURRENT_USER_ROLE = "{{ current_user.role }}";
+    const ROOM_TYPE = "{{ room_type }}";
+    const ROOM_ID = {{ room_id }};
+    const ROOM_KEY = ROOM_TYPE + '_' + ROOM_ID;
+
+    const socket = io();
+    const messagesDiv = document.getElementById('chat-messages');
+    const statusEl = document.getElementById('connection-status');
+    const statusDot = document.getElementById('status-dot');
+    const form = document.getElementById('message-form');
+    const input = document.getElementById('message-input');
+
+    function scrollToBottom() {
+        messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    }
+
+    socket.on('connect', () => {
+        statusEl.textContent = 'Connected';
+        statusDot.className = 'w-2 h-2 rounded-full bg-green-500';
+        socket.emit('join', { room: ROOM_KEY });
+    });
+
+    socket.on('disconnect', () => {
+        statusEl.textContent = 'Disconnected';
+        statusDot.className = 'w-2 h-2 rounded-full bg-red-500';
+    });
+
+    socket.on('receive_message', (data) => {
+        const isMe = data.sender === CURRENT_USER;
+        const bubble = document.createElement('div');
+        bubble.className = `flex ${isMe ? 'justify-end' : 'justify-start'} items-end gap-2`;
+
+        const now = new Date();
+        const time = now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
+
+        if (isMe) {
+            bubble.innerHTML = `
+                <div>
+                    <div class="bg-primary-600 text-white rounded-2xl rounded-br-sm px-4 py-2 max-w-xs sm:max-w-md">
+                        <p class="text-sm">${escapeHtml(data.content)}</p>
+                    </div>
+                    <p class="text-xs text-gray-300 mt-0.5 text-right">${time}</p>
+                </div>`;
+        } else {
+            const roleClass = data.sender_role === 'teacher' ? 'text-purple-500' : 'text-blue-400';
+            bubble.innerHTML = `
+                <div class="w-7 h-7 rounded-full bg-primary-200 flex items-center justify-center text-primary-800 text-xs font-bold flex-shrink-0">
+                    ${escapeHtml(data.sender[0].toUpperCase())}
+                </div>
+                <div>
+                    <p class="text-xs text-gray-400 mb-1 ml-1">${escapeHtml(data.sender)} <span class="${roleClass}">· ${data.sender_role}</span></p>
+                    <div class="bg-white border border-gray-200 text-gray-800 rounded-2xl rounded-bl-sm px-4 py-2 max-w-xs sm:max-w-md">
+                        <p class="text-sm">${escapeHtml(data.content)}</p>
+                    </div>
+                    <p class="text-xs text-gray-300 mt-0.5">${time}</p>
+                </div>`;
+        }
+        messagesDiv.appendChild(bubble);
+        scrollToBottom();
+    });
+
+    form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const content = input.value.trim();
+        if (!content) return;
+        socket.emit('send_message', { room: ROOM_KEY, content: content });
+        input.value = '';
+        input.focus();
+    });
+
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.appendChild(document.createTextNode(text));
+        return div.innerHTML;
+    }
+
+    scrollToBottom();
+</script>
+{% endblock %}
